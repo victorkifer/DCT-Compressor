@@ -66,4 +66,30 @@ public class DCT {
       }
     }
   }
+
+  public int[][] findDCT(final int input[][]) {
+    int dct[][] = new int[BLOCK_SIZE][BLOCK_SIZE];
+
+    double tmpMtx[][] = new double[BLOCK_SIZE][BLOCK_SIZE];
+    for(int i = 0; i < BLOCK_SIZE; i++) {
+      for(int j = 0; j < BLOCK_SIZE; j++) {
+        tmpMtx[i][j] = 0.0;
+        for(int k = 0; k < BLOCK_SIZE; k++) {
+          tmpMtx[i][j] += input[i][k] * cosT[k][j];
+        }
+      }
+    }
+
+    for(int i = 0; i < BLOCK_SIZE; i++) {
+      for(int j = 0; j < BLOCK_SIZE; j++) {
+        double tmp = 0.0;
+        for(int k = 0; k < BLOCK_SIZE; k++) {
+          tmp += cos[i][k] * tmpMtx[k][j];
+        }
+        dct[i][j] = (int) Math.round(tmp);
+      }
+    }
+
+    return dct;
+  }
 }
