@@ -25,4 +25,16 @@ public class MatrixUtils {
     }
   }
 
+  public static double[][] transposeMatrix(double[][] matrix, int rows, int cols) {
+    double [][] tMatrix = new double[rows][cols];
+
+    for(int i = 0; i < rows; i++) {
+      for(int j = 0; j < cols; j++) {
+        tMatrix[j][i] = matrix[i][j];
+      }
+    }
+
+    return tMatrix;
+  }
+
 }
