@@ -54,7 +54,7 @@ public class DCT {
   }
 
   private void initTransposedCosineMatrix() {
-    cosT = MatrixUtils.transposeMatrix(cos, BLOCK_SIZE, BLOCK_SIZE);
+    cosT = MatrixUtils.transposeMatrix(cos);
   }
 
   private void initQuantumMatrix() {
@@ -67,7 +67,7 @@ public class DCT {
     }
   }
 
-  public int[][] findDCT(final int input[][]) {
+  public int[][] forwardDCT(final int input[][]) {
     int dct[][] = new int[BLOCK_SIZE][BLOCK_SIZE];
 
     double tmpMtx[][] = new double[BLOCK_SIZE][BLOCK_SIZE];
@@ -91,5 +91,30 @@ public class DCT {
     }
 
     return dct;
+  }
+
+  public int[][] quantizeDCT(final int dct[][], boolean useZigZag) {
+    int quantizedDCT[][] = new int[BLOCK_SIZE][BLOCK_SIZE];
+
+    double result;
+
+    if (useZigZag) {
+      for (int i = 0; i < (BLOCK_SIZE * BLOCK_SIZE); i++) {
+        int row = zigZag[i][0];
+        int col = zigZag[i][1];
+
+        result = (dct[row][col] / quantum[row][col]);
+        quantizedDCT[row][col] = (int) Math.round(result);
+      }
+    } else {
+      for (int i = 0; i < BLOCK_SIZE; i++) {
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+          result = dct[i][j] / quantum[i][j];
+          quantizedDCT[i][j] = (int) Math.round(result);
+        }
+      }
+    }
+
+    return quantizedDCT;
   }
 }
