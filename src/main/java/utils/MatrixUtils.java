@@ -1,5 +1,7 @@
 package utils;
 
+import java.io.*;
+
 /**
  * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
  * License []
@@ -29,7 +31,7 @@ public class MatrixUtils {
     final int height = matrix.length;
     final int width = matrix[0].length;
 
-    double [][] tMatrix = new double[height][width];
+    double [][] tMatrix = new double[width][height];
 
     for(int i = 0; i < height; i++) {
       for(int j = 0; j < width; j++) {
@@ -55,6 +57,123 @@ public class MatrixUtils {
     }
 
     return vector;
+  }
+
+  public static int[] toVector(int[][] matrix, int width, int height) {
+    int[] vector = new int[height*width];
+
+    for (int i = 0; i < height; i++) {
+      for (int j = 0; j < width; j++) {
+        vector[i*width+j] = matrix[i][j];
+      }
+    }
+
+    return vector;
+  }
+
+  public static int[][] fromVector(int[] vector) {
+    final int height = (int)Math.sqrt(vector.length);
+    final int width = height;
+
+    int[][] matrix = new int[height][width];
+
+    for (int i = 0; i < height; i++) {
+      for (int j = 0; j < width; j++) {
+        matrix[i][j] = vector[i*height+j];
+      }
+    }
+
+    return matrix;
+  }
+
+  public static int[][] fromVector(final int[] vector, final int width, final int height) {
+    int[][] matrix = new int[height][width];
+
+    for (int i = 0; i < height; i++) {
+      for (int j = 0; j < width; j++) {
+        matrix[i][j] = vector[i*height+j];
+      }
+    }
+
+    return matrix;
+  }
+
+  public static int[][] getChunk(int[][] matrix, int block_size, int xOffset, int yOffset) {
+    final int height = matrix.length;
+    final int width = matrix[0].length;
+
+    int offsetX = block_size*xOffset;
+    int offsetY = block_size*yOffset;
+
+    int offsetX2 = block_size*(xOffset+1);
+    int offsetY2 = block_size*(yOffset+1);
+
+    if(offsetX2 > width)
+      return null;
+    if(offsetY2 > height)
+      return null;
+
+    int[][] chunk = new int[block_size][block_size];
+
+    for (int i = offsetY; i < offsetY+block_size; i++) {
+      for (int j = offsetX; j < offsetX+block_size; j++) {
+        chunk[i-offsetY][j-offsetX] = matrix[i][j];
+      }
+    }
+
+    return chunk;
+  }
+
+  public static int[][] setChunk(int[][] matrix, int[][] chunk, int xOffset, int yOffset) {
+    final int height = matrix.length;
+    final int width = matrix[0].length;
+
+    int block_size = chunk.length;
+
+    int offsetX = block_size*xOffset;
+    int offsetY = block_size*yOffset;
+
+    int offsetX2 = block_size*(xOffset+1);
+    int offsetY2 = block_size*(yOffset+1);
+
+    if(offsetX2 > width)
+      return null;
+    if(offsetY2 > height)
+      return null;
+
+    for (int i = offsetY; i < offsetY+block_size; i++) {
+      for (int j = offsetX; j < offsetX+block_size; j++) {
+        matrix[i][j] = chunk[i-offsetY][j-offsetX];
+      }
+    }
+
+    return matrix;
+  }
+
+  public static void toFile(int[][] matrix) {
+    File file = new File("matrices.txt");
+    try {
+      OutputStream os = new FileOutputStream(file, true);
+      PrintWriter out = new PrintWriter(os);
+
+      for (int[] row : matrix) {
+        for (int el : row) {
+          out.print(el + " ");
+        }
+        out.println();
+      }
+      out.println("-----------------------------------------------------------------");
+
+      out.flush();
+      out.close();
+      os.flush();
+      os.close();
+
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
 }

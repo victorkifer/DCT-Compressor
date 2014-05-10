@@ -1,4 +1,4 @@
-import compressor.ZigZagMatrix;
+import compressor.internal.ZigZagMatrix;
 import junit.framework.TestCase;
 
 /**

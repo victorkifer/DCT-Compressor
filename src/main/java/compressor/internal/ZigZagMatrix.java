@@ -1,4 +1,4 @@
-package compressor;
+package compressor.internal;
 
 /**
  * Created by Victor

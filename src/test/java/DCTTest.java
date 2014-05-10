@@ -12,7 +12,7 @@ public class DCTTest extends TestCase {
 
   @Before
   public void setUp() throws Exception {
-    dct = new DCT(50);
+    dct = new DCT(10);
   }
 
   public void testForwardDCT() throws Exception {
@@ -28,7 +28,7 @@ public class DCTTest extends TestCase {
     };
 
     int[][] correctOutput = new int[][] {
-        { 1210, -18, 15, -9, 23, -9, -14, -19 },
+        { 176, -18, 15, -9, 23, -9, -14, -19 },
         { 21, -34, 26, -9, -11, 11, 14, 7 },
         { -10, -24, -2, 6, -18, 3, -20, -1 },
         { -8, -5, 14, -15, -8, -3, -3, 8 },
@@ -40,12 +40,84 @@ public class DCTTest extends TestCase {
 
     int[][] output = dct.forwardDCT(input);
 
-    final int size = 8;
+    final int size = DCT.getBlockSize();
 
     for(int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
         assertEquals(correctOutput[i][j], output[i][j]);
       }
+    }
+  }
+
+  public void testQuantizeDCT() throws Exception {
+    int[][] input = new int[][] {
+        { 176, -18, 15, -9, 23, -9, -14, -19 },
+        { 21, -34, 26, -9, -11, 11, 14, 7 },
+        { -10, -24, -2, 6, -18, 3, -20, -1 },
+        { -8, -5, 14, -15, -8, -3, -3, 8 },
+        { -3, 10, 8, 1, -11, 18, 18, 15 },
+        { 4, -2, -18, 8, 8, -4, 1, -7 },
+        { 9, 1, -3, 4, -1, -7, -1, -2 },
+        { 0, -8, -2, 2, 1, 4, -6, 0 }
+    };
+
+    int[][] correctOutput = new int[][] {
+        { 176, -18, 15, -9, 23, -9, -14, -19 },
+        { 21, -34, 26, -9, -11, 11, 14, 7 },
+        { -10, -24, -2, 6, -18, 3, -20, -1 },
+        { -8, -5, 14, -15, -8, -3, -3, 8 },
+        { -3, 10, 8, 1, -11, 18, 18, 15 },
+        { 4, -2, -18, 8, 8, -4, 1, -7 },
+        { 9, 1, -3, 4, -1, -7, -1, -2 },
+        { 0, -8, -2, 2, 1, 4, -6, 0 }
+    };
+
+    int[][] output = dct.quantizeDCT(input, true);
+
+    final int size = DCT.getBlockSize();
+
+    for(int i = 0; i < size; i++) {
+      for (int j = 0; j < size; j++) {
+        System.out.print(output[i][j] + " ");
+        //assertEquals(correctOutput[i][j], output[i][j]);
+      }
+      System.out.println();
+    }
+  }
+
+  public void testDequantizeDCT() throws Exception {
+    int[][] input = new int[][] {
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 }
+    };
+
+    int[][] correctOutput = new int[][] {
+        { 1210, -18, 15, -9, 23, -9, -14, -19 },
+        { 21, -34, 26, -9, -11, 11, 14, 7 },
+        { -10, -24, -2, 6, -18, 3, -20, -1 },
+        { -8, -5, 14, -15, -8, -3, -3, 8 },
+        { -3, 10, 8, 1, -11, 18, 18, 15 },
+        { 4, -2, -18, 8, 8, -4, 1, -7 },
+        { 9, 1, -3, 4, -1, -7, -1, -2 },
+        { 0, -8, -2, 2, 1, 4, -6, 0 }
+    };
+
+    int[][] output = dct.dequantizeDCT(input, true);
+
+    final int size = DCT.getBlockSize();
+
+    for(int i = 0; i < size; i++) {
+      for (int j = 0; j < size; j++) {
+        System.out.print(output[i][j] + " ");
+        //assertEquals(correctOutput[i][j], output[i][j]);
+      }
+      System.out.println();
     }
   }
 }
