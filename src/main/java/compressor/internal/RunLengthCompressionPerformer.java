@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
  * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
  * Year: 2014
  */
-public class RunCounterCompressionPerformer {
+public class RunLengthCompressionPerformer {
 
   public byte[] compressImage(int[] QDCT) {
     int i = 0;
