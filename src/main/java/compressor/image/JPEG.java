@@ -3,7 +3,11 @@ package compressor.image;
 import utils.Log;
 import utils.MatrixUtils;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -143,7 +147,16 @@ public class JPEG extends BaseImage {
     MatrixUtils.printChunk(greenMask, 8, 8);
     MatrixUtils.printChunk(blueMask, 8, 8);
 
-    ImageIO.write(image, "jpg", new File(filename));
+    File file = new File(filename);
+
+    ImageOutputStream ios =  ImageIO.createImageOutputStream(file);
+    ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+    ImageWriteParam param = writer.getDefaultWriteParam();
+    param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+    param.setCompressionQuality(1.0F);
+    writer.setOutput(ios);
+    writer.write(null, new IIOImage(image, null, null), param);
+    writer.dispose();
 
     Log.i("Done");
   }
