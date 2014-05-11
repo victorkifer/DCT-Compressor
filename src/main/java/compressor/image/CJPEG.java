@@ -1,5 +1,7 @@
 package compressor.image;
 
+import utils.Log;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,83 +14,59 @@ import java.nio.ByteBuffer;
  */
 public class CJPEG extends BaseImage {
 
-  int[] cRedMask;
-  int[] cGreenMask;
-  int[] cBlueMask;
+  byte[] cRedMask;
+  byte[] cGreenMask;
+  byte[] cBlueMask;
 
   public static CJPEG fromFile(String filename) throws IOException {
-    FileInputStream fileInputStream;
-
     File file = new File(filename);
     CJPEG cImage = new CJPEG();
 
-    byte[] intBytes = new byte[4];
-    ByteBuffer bb = ByteBuffer.allocate(4);
+    try (FileInputStream fileInputStream = new FileInputStream(file)) {
+      Log.i("Loading compressed image");
+      // reading height
+      cImage.height = getInt(fileInputStream);
 
-    //convert file into array of bytes
-    fileInputStream = new FileInputStream(file);
+      // reading width
+      cImage.width = getInt(fileInputStream);
 
-    // reading header
+      // reading compressed red mask
+      int compressedMaskLen = getInt(fileInputStream);
+      cImage.cRedMask = new byte[compressedMaskLen];
+      fileInputStream.read(cImage.cRedMask);
 
-    // reading height
-    fileInputStream.read(intBytes);
-    bb.put(intBytes);
-    cImage.height = bb.getInt();
-    bb.clear();
+      // reading compressed green mask
+      compressedMaskLen = getInt(fileInputStream);
+      cImage.cGreenMask = new byte[compressedMaskLen];
+      fileInputStream.read(cImage.cGreenMask);
 
-    // reading width
-    fileInputStream.read(intBytes);
-    bb.put(intBytes);
-    cImage.width = bb.getInt();
-    bb.clear();
+      // reading compressed blue mask
+      compressedMaskLen = getInt(fileInputStream);
+      cImage.cBlueMask = new byte[compressedMaskLen];
+      fileInputStream.read(cImage.cBlueMask);
 
-    int compressedMaskLen;
+      fileInputStream.close();
 
-    // reading compressed red mask
-    fileInputStream.read(intBytes);
-    bb.put(intBytes);
-    compressedMaskLen = bb.getInt();
-    bb.clear();
-
-    cImage.cRedMask = new int[compressedMaskLen];
-    for (int i = 0; i < compressedMaskLen; i++) {
-      fileInputStream.read(intBytes);
-      bb.put(intBytes);
-      cImage.cRedMask[i] = bb.getInt();
-      bb.clear();
+      cImage.normalize();
     }
 
-    // reading compressed green mask
-    fileInputStream.read(intBytes);
-    bb.put(intBytes);
-    compressedMaskLen = bb.getInt();
-    bb.clear();
-
-    cImage.cGreenMask = new int[compressedMaskLen];
-    for (int i = 0; i < compressedMaskLen; i++) {
-      fileInputStream.read(intBytes);
-      bb.put(intBytes);
-      cImage.cGreenMask[i] = bb.getInt();
-      bb.clear();
-    }
-
-    // reading compressed blue mask
-    fileInputStream.read(intBytes);
-    bb.put(intBytes);
-    compressedMaskLen = bb.getInt();
-    bb.clear();
-
-    cImage.cBlueMask = new int[compressedMaskLen];
-    for (int i = 0; i < compressedMaskLen; i++) {
-      fileInputStream.read(intBytes);
-      bb.put(intBytes);
-      cImage.cBlueMask[i] = bb.getInt();
-      bb.clear();
-    }
-
-    fileInputStream.close();
+    Log.i("Done");
 
     return cImage;
+  }
+
+  private static int getInt(FileInputStream fis) throws IOException {
+    byte[] intBytes = new byte[4];
+    ByteBuffer bb = ByteBuffer.allocate(4);
+    int result;
+
+    fis.read(intBytes);
+    bb.put(intBytes);
+    bb.flip();
+    result = bb.getInt();
+    bb.clear();
+
+    return result;
   }
 
   public static class Builder {
@@ -106,15 +84,15 @@ public class CJPEG extends BaseImage {
       cImage.height = height;
     }
 
-    public void redMask(int[] redMask) {
+    public void redMask(byte[] redMask) {
       cImage.cRedMask = redMask;
     }
 
-    public void greenMask(int[] greenMask) {
+    public void greenMask(byte[] greenMask) {
       cImage.cGreenMask = greenMask;
     }
 
-    public void blueMask(int[] blueMask) {
+    public void blueMask(byte[] blueMask) {
       cImage.cBlueMask = blueMask;
     }
 
@@ -124,7 +102,7 @@ public class CJPEG extends BaseImage {
     }
   }
 
-  public int[] getCompressedChannel(Channel channel) {
+  public byte[] getCompressedChannel(Channel channel) {
     switch (channel) {
       case Red:
         return cRedMask;
@@ -141,25 +119,36 @@ public class CJPEG extends BaseImage {
 
   @Override
   public void toFile(String filename) throws IOException {
-    ByteBuffer bb = ByteBuffer.allocate(4*(5+cRedMask.length+cGreenMask.length+cBlueMask.length));
-    bb.putInt(height);
-    bb.putInt(width);
-    bb.putInt(cRedMask.length);
-    bb.putInt(cGreenMask.length);
-    bb.putInt(cBlueMask.length);
+    Log.i("Saving compressed image");
 
-    for (int i : cRedMask) {
-      bb.putInt(i);
-    }
-    for (int i : cGreenMask) {
-      bb.putInt(i);
-    }
-    for (int i : cBlueMask) {
-      bb.putInt(i);
+    ByteBuffer buffer = ByteBuffer.allocate(4*5+cRedMask.length+cGreenMask.length+cBlueMask.length);
+    buffer.putInt(height);
+    buffer.putInt(width);
+
+    buffer.putInt(cRedMask.length);
+    for (byte i : cRedMask) {
+      buffer.put(i);
     }
 
+    buffer.putInt(cGreenMask.length);
+    for (byte i : cGreenMask) {
+      buffer.put(i);
+    }
+
+    buffer.putInt(cBlueMask.length);
+    for (byte i : cBlueMask) {
+      buffer.put(i);
+    }
+
+    buffer.flip();
+    byte[] bytes = new byte[buffer.remaining()];
+    buffer.get(bytes);
     try (FileOutputStream stream = new FileOutputStream(filename)) {
-      stream.write(bb.array());
+      stream.write(bytes);
+
+      stream.close();
     }
+
+    Log.i("Done");
   }
 }

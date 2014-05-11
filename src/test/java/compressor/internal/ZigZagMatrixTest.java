@@ -1,11 +1,7 @@
-import compressor.internal.ZigZagMatrix;
+package compressor.internal;
+
 import junit.framework.TestCase;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * License []
- * Year: 2014
- */
 public class ZigZagMatrixTest extends TestCase {
 
   public void testGetZigZagMatrix() throws Exception {

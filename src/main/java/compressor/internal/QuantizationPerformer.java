@@ -16,6 +16,10 @@ public class QuantizationPerformer {
     initMatrices();
   }
 
+  public int getQuality() {
+    return mQuality;
+  }
+
   private void initMatrices() {
     quantum = new int[Config.getBlockSize()][Config.getBlockSize()];
 
@@ -33,6 +37,10 @@ public class QuantizationPerformer {
         quantum[i][j] = (i+j+1) * mQuality + 1;
       }
     }
+  }
+
+  public int[][] getQuantumMatrix() {
+    return quantum;
   }
 
   public void reset(int quality) {

@@ -4,6 +4,7 @@ import compressor.image.CJPEG;
 import compressor.image.Channel;
 import compressor.image.JPEG;
 import compressor.internal.*;
+import utils.Log;
 import utils.MatrixUtils;
 
 /**
@@ -35,39 +36,43 @@ public class Compressor {
     int[][] green = image.getChannel(Channel.Green);
     int[][] blue = image.getChannel(Channel.Blue);
 
+    Log.i("Performing ForwardDCT");
     performForwardDCT(red);
     performForwardDCT(green);
     performForwardDCT(blue);
 
+    Log.i("Performing quantization. Quality equals to " + quantizer.getQuality());
     performQuantization(red);
     performQuantization(green);
     performQuantization(blue);
 
+    Log.i("Performing matrix to vector conversion");
     int[] redArr = MatrixUtils.toVector(red);
     int[] greenArr = MatrixUtils.toVector(green);
     int[] blueArr = MatrixUtils.toVector(blue);
 
-    redArr = compressor.compressImage(redArr);
-    greenArr = compressor.compressImage(greenArr);
-    blueArr = compressor.compressImage(blueArr);
+    Log.i("Performing RLE compression");
+    byte[] redArr2 = compressor.compressImage(redArr);
+    byte[] greenArr2 = compressor.compressImage(greenArr);
+    byte[] blueArr2 = compressor.compressImage(blueArr);
 
     CJPEG.Builder builder = new CJPEG.Builder();
     builder.height(image.getHeight());
     builder.width(image.getWidth());
-    builder.redMask(redArr);
-    builder.greenMask(greenArr);
-    builder.blueMask(blueArr);
+    builder.redMask(redArr2);
+    builder.greenMask(greenArr2);
+    builder.blueMask(blueArr2);
 
     return builder.build();
   }
 
   private void performForwardDCT(int[][] channelValue) {
-    int h = channelValue.length / DCT.getBlockSize();
-    int w = channelValue[0].length / DCT.getBlockSize();
+    int h = channelValue.length / Config.getBlockSize();
+    int w = channelValue[0].length / Config.getBlockSize();
 
     for(int i = 0; i < h; i++) {
       for(int j = 0; j < w; j++) {
-        int [][]chunk = MatrixUtils.getChunk(channelValue, DCT.getBlockSize(), j, i);
+        int [][]chunk = MatrixUtils.getChunk(channelValue, Config.getBlockSize(), j, i);
         chunk = dctizer.forwardDCT(chunk);
         MatrixUtils.setChunk(channelValue, chunk, j, i);
       }
@@ -75,12 +80,12 @@ public class Compressor {
   }
 
   private void performQuantization(int[][] dctChannel) {
-    int h = dctChannel.length / DCT.getBlockSize();
-    int w = dctChannel[0].length / DCT.getBlockSize();
+    int h = dctChannel.length / Config.getBlockSize();
+    int w = dctChannel[0].length / Config.getBlockSize();
 
     for(int i = 0; i < h; i++) {
       for(int j = 0; j < w; j++) {
-        int [][]chunk = MatrixUtils.getChunk(dctChannel, DCT.getBlockSize(), j, i);
+        int [][]chunk = MatrixUtils.getChunk(dctChannel, Config.getBlockSize(), j, i);
         chunk = quantizer.quantizeDCT(chunk, true);
         MatrixUtils.setChunk(dctChannel, chunk, j, i);
       }
@@ -88,26 +93,30 @@ public class Compressor {
   }
 
   public JPEG decompressImage(CJPEG image) {
-    int[] redArr = image.getCompressedChannel(Channel.Red);
-    int[] greenArr = image.getCompressedChannel(Channel.Green);
-    int[] blueArr = image.getCompressedChannel(Channel.Blue);
+    byte[] redArr2 = image.getCompressedChannel(Channel.Red);
+    byte[] greenArr2 = image.getCompressedChannel(Channel.Green);
+    byte[] blueArr2 = image.getCompressedChannel(Channel.Blue);
 
-    int imageLength = image.getHeight()*image.getWidth();
-    redArr = compressor.decompressImage(redArr, imageLength);
-    greenArr = compressor.decompressImage(greenArr, imageLength);
-    blueArr = compressor.decompressImage(blueArr, imageLength);
+    Log.i("Performing RLE decompression");
+    int imageLength = image.getNormalizedHeight()*image.getNormalizedWidth();
+    int[] redArr = compressor.decompressImage(redArr2, imageLength);
+    int[] greenArr = compressor.decompressImage(greenArr2, imageLength);
+    int[] blueArr = compressor.decompressImage(blueArr2, imageLength);
 
+    Log.i("Performing vector to matrix conversion");
     int[][] red = MatrixUtils.fromVector(redArr, image.getWidth(), image.getHeight());
     int[][] green = MatrixUtils.fromVector(greenArr, image.getWidth(), image.getHeight());
     int[][] blue = MatrixUtils.fromVector(blueArr, image.getWidth(), image.getHeight());
 
-    red = quantizer.dequantizeDCT(red, true);
-    green = quantizer.dequantizeDCT(green, true);
-    blue = quantizer.dequantizeDCT(blue, true);
+    Log.i("Performing dequantization");
+    performDequantization(red);
+    performDequantization(green);
+    performDequantization(blue);
 
-    red = dctizer.inverseDCT(red);
-    green = dctizer.inverseDCT(green);
-    blue = dctizer.inverseDCT(blue);
+    Log.i("Performing InverseDCT");
+    performInverseDCT(red);
+    performInverseDCT(green);
+    performInverseDCT(blue);
 
     JPEG.Builder builder = new JPEG.Builder();
     builder.originalHeight(image.getHeight());
@@ -117,5 +126,31 @@ public class Compressor {
     builder.blueMask(blue);
 
     return builder.build();
+  }
+
+  private void performInverseDCT(int[][] channelValue) {
+    int h = channelValue.length / Config.getBlockSize();
+    int w = channelValue[0].length / Config.getBlockSize();
+
+    for(int i = 0; i < h; i++) {
+      for(int j = 0; j < w; j++) {
+        int [][]chunk = MatrixUtils.getChunk(channelValue, Config.getBlockSize(), j, i);
+        chunk = dctizer.inverseDCT(chunk);
+        MatrixUtils.setChunk(channelValue, chunk, j, i);
+      }
+    }
+  }
+
+  private void performDequantization(int[][] dctChannel) {
+    int h = dctChannel.length / Config.getBlockSize();
+    int w = dctChannel[0].length / Config.getBlockSize();
+
+    for(int i = 0; i < h; i++) {
+      for(int j = 0; j < w; j++) {
+        int [][]chunk = MatrixUtils.getChunk(dctChannel, Config.getBlockSize(), j, i);
+        chunk = quantizer.dequantizeDCT(chunk, true);
+        MatrixUtils.setChunk(dctChannel, chunk, j, i);
+      }
+    }
   }
 }

@@ -91,11 +91,22 @@ public class MatrixUtils {
 
     for (int i = 0; i < height; i++) {
       for (int j = 0; j < width; j++) {
-        matrix[i][j] = vector[i*height+j];
+        matrix[i][j] = vector[i*width+j];
       }
     }
 
     return matrix;
+  }
+
+  public static void printChunk(int[][] matrix, int width, int height) {
+    System.out.println("-------------------------------------------------------------");
+    for (int i = 0; i < height; i++) {
+      for (int j = 0; j < width; j++) {
+        System.out.print(matrix[i][j] + " ");
+      }
+      System.out.println();
+    }
+    System.out.println("-------------------------------------------------------------");
   }
 
   public static int[][] getChunk(int[][] matrix, int block_size, int xOffset, int yOffset) {
@@ -115,8 +126,8 @@ public class MatrixUtils {
 
     int[][] chunk = new int[block_size][block_size];
 
-    for (int i = offsetY; i < offsetY+block_size; i++) {
-      for (int j = offsetX; j < offsetX+block_size; j++) {
+    for (int i = offsetY; i < offsetY2; i++) {
+      for (int j = offsetX; j < offsetX2; j++) {
         chunk[i-offsetY][j-offsetX] = matrix[i][j];
       }
     }
@@ -124,7 +135,7 @@ public class MatrixUtils {
     return chunk;
   }
 
-  public static int[][] setChunk(int[][] matrix, int[][] chunk, int xOffset, int yOffset) {
+  public static void setChunk(int[][] matrix, int[][] chunk, int xOffset, int yOffset) {
     final int height = matrix.length;
     final int width = matrix[0].length;
 
@@ -137,17 +148,15 @@ public class MatrixUtils {
     int offsetY2 = block_size*(yOffset+1);
 
     if(offsetX2 > width)
-      return null;
+      return;
     if(offsetY2 > height)
-      return null;
+      return;
 
-    for (int i = offsetY; i < offsetY+block_size; i++) {
-      for (int j = offsetX; j < offsetX+block_size; j++) {
+    for (int i = offsetY; i < offsetY2; i++) {
+      for (int j = offsetX; j < offsetX2; j++) {
         matrix[i][j] = chunk[i-offsetY][j-offsetX];
       }
     }
-
-    return matrix;
   }
 
   public static void toFile(int[][] matrix) {

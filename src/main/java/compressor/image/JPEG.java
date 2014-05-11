@@ -1,5 +1,8 @@
 package compressor.image;
 
+import utils.Log;
+import utils.MatrixUtils;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -16,6 +19,7 @@ public class JPEG extends BaseImage {
   int[][] blueMask;
 
   public static JPEG fromFile(String filename) throws IOException {
+    Log.i("Loading jpeg image...");
     URL url = new File(filename).toURI().toURL();
     BufferedImage image = ImageIO.read(url);
 
@@ -37,6 +41,12 @@ public class JPEG extends BaseImage {
     cImage.redMask = cImage.getMaskedArray(rgb, 0x00ff0000, 16);
     cImage.greenMask = cImage.getMaskedArray(rgb, 0x0000ff00, 8);
     cImage.blueMask = cImage.getMaskedArray(rgb, 0x000000ff, 0);
+
+    MatrixUtils.printChunk(cImage.redMask, 8, 8);
+    MatrixUtils.printChunk(cImage.greenMask, 8, 8);
+    MatrixUtils.printChunk(cImage.blueMask, 8, 8);
+
+    Log.i("Done");
 
     return cImage;
   }
@@ -69,6 +79,10 @@ public class JPEG extends BaseImage {
     }
 
     public JPEG build() {
+      MatrixUtils.printChunk(cImage.redMask, 8, 8);
+      MatrixUtils.printChunk(cImage.greenMask, 8, 8);
+      MatrixUtils.printChunk(cImage.blueMask, 8, 8);
+
       cImage.normalize();
       return cImage;
     }
@@ -117,6 +131,7 @@ public class JPEG extends BaseImage {
 
   @Override
   public void toFile(String filename) throws IOException {
+    Log.i("Saving jpeg image");
     BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
     for (int i = 0; i < height; i++) {
@@ -129,5 +144,7 @@ public class JPEG extends BaseImage {
     }
 
     ImageIO.write(image, "jpg", new File(filename));
+
+    Log.i("Done");
   }
 }

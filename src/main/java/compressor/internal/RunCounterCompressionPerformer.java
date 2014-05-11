@@ -1,6 +1,6 @@
 package compressor.internal;
 
-import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
 
 /**
  * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
@@ -8,13 +8,13 @@ import java.nio.IntBuffer;
  */
 public class RunCounterCompressionPerformer {
 
-  public int[] compressImage(int[] QDCT) {
+  public byte[] compressImage(int[] QDCT) {
     int i = 0;
     int temp;
     int runCounter = 0;
     int imageLength = QDCT.length;
 
-    IntBuffer ib = IntBuffer.allocate(imageLength);
+    ByteBuffer buffer = ByteBuffer.allocate(imageLength);
 
     while ((i < imageLength)) {
       temp = QDCT[i];
@@ -25,38 +25,43 @@ public class RunCounterCompressionPerformer {
       }
 
       if (runCounter > 4) {
-        ib.put(255);
-        ib.put(temp);
-        ib.put(runCounter);
+        buffer.put((byte) 255);
+        buffer.put((byte) temp);
+        buffer.put((byte) runCounter);
       } else {
         for (int k = 0; k < runCounter; k++) {
-          ib.put(temp);
+          buffer.put((byte) temp);
         }
       }
 
       runCounter = 0;
     }
 
-    return ib.array();
+    buffer.flip();
+    byte[] bytes = new byte[buffer.remaining()];
+    buffer.get(bytes);
+
+    return bytes;
   }
 
-  public int[] decompressImage(int[] compressedImag, int imageLength) {
+  public int[] decompressImage(byte[] compressedImag, int imageLength) {
     int i = 0;
     int j = 0;
     int k = 0;
     int temp = 0;
-    IntBuffer bb = IntBuffer.wrap(compressedImag);
+
+    ByteBuffer buffer = ByteBuffer.wrap(compressedImag);
     int pixel[] = new int[imageLength];
 
-    while (i < imageLength) {
-      temp = bb.get();
+    while (i < compressedImag.length) {
+      temp = buffer.get();
 
       if (k < imageLength) {
         if (temp == 255) {
           i++;
-          int value = bb.get();
+          int value = buffer.get();
           i++;
-          int length = bb.get();
+          int length = buffer.get();
 
           for (j = 0; j < length; j++) {
             pixel[k] = value;

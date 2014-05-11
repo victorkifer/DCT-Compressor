@@ -37,5 +37,13 @@ public abstract class BaseImage {
     normalizedHeight = height + b;
   }
 
+  public int getNormalizedWidth() {
+    return normalizedWidth;
+  }
+
+  public int getNormalizedHeight() {
+    return normalizedHeight;
+  }
+
   public abstract void toFile(String filename) throws IOException;
 }
