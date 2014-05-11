@@ -15,7 +15,7 @@ public class Compressor {
 
   DCTPerformer dctizer;
   QuantizationPerformer quantizer;
-  RunCounterCompressionPerformer compressor;
+  RunLengthCompressionPerformer compressor;
 
   public Compressor() {
     this(10);
@@ -24,11 +24,56 @@ public class Compressor {
   public Compressor(int quality) {
     dctizer = new DCTPerformer();
     quantizer = new QuantizationPerformer(quality);
-    compressor = new RunCounterCompressionPerformer();
+    compressor = new RunLengthCompressionPerformer();
   }
 
   public void setQuality(int quality) {
     quantizer.reset(quality);
+  }
+
+  public JPEG test(JPEG image) {
+    int[][] red = image.getChannel(Channel.Red);
+    int[][] green = image.getChannel(Channel.Green);
+    int[][] blue = image.getChannel(Channel.Blue);
+
+    Log.i("Performing ForwardDCT");
+    performForwardDCT(red);
+    performForwardDCT(green);
+    performForwardDCT(blue);
+
+    Log.i("Performing quantization. Quality equals to " + quantizer.getQuality());
+    performQuantization(red);
+    performQuantization(green);
+    performQuantization(blue);
+
+    Log.i("Performing matrix to vector conversion");
+    int[] redArr = MatrixUtils.toVector(red);
+    int[] greenArr = MatrixUtils.toVector(green);
+    int[] blueArr = MatrixUtils.toVector(blue);
+
+    Log.i("Performing vector to matrix conversion");
+    red = MatrixUtils.fromVector(redArr, image.getNormalizedWidth(), image.getNormalizedHeight());
+    green = MatrixUtils.fromVector(greenArr, image.getNormalizedWidth(), image.getNormalizedHeight());
+    blue = MatrixUtils.fromVector(blueArr, image.getNormalizedWidth(), image.getNormalizedHeight());
+
+    Log.i("Performing dequantization");
+    performDequantization(red);
+    performDequantization(green);
+    performDequantization(blue);
+
+    Log.i("Performing InverseDCT");
+    performInverseDCT(red);
+    performInverseDCT(green);
+    performInverseDCT(blue);
+
+    JPEG.Builder builder = new JPEG.Builder();
+    builder.originalHeight(image.getHeight());
+    builder.originalWidth(image.getWidth());
+    builder.redMask(red);
+    builder.greenMask(green);
+    builder.blueMask(blue);
+
+    return builder.build();
   }
 
   public CJPEG compressImage(JPEG image) {
@@ -104,9 +149,9 @@ public class Compressor {
     int[] blueArr = compressor.decompressImage(blueArr2, imageLength);
 
     Log.i("Performing vector to matrix conversion");
-    int[][] red = MatrixUtils.fromVector(redArr, image.getWidth(), image.getHeight());
-    int[][] green = MatrixUtils.fromVector(greenArr, image.getWidth(), image.getHeight());
-    int[][] blue = MatrixUtils.fromVector(blueArr, image.getWidth(), image.getHeight());
+    int[][] red = MatrixUtils.fromVector(redArr, image.getNormalizedWidth(), image.getNormalizedHeight());
+    int[][] green = MatrixUtils.fromVector(greenArr, image.getNormalizedWidth(), image.getNormalizedHeight());
+    int[][] blue = MatrixUtils.fromVector(blueArr, image.getNormalizedWidth(), image.getNormalizedHeight());
 
     Log.i("Performing dequantization");
     performDequantization(red);

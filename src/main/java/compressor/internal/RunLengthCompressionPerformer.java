@@ -8,33 +8,39 @@ import java.nio.ByteBuffer;
  */
 public class RunLengthCompressionPerformer {
 
+  public static final byte MARKER = -128;
+
   public byte[] compressImage(int[] QDCT) {
     int i = 0;
-    int temp;
-    int runCounter = 0;
+    byte temp;
+    short runCounter = 1;
     int imageLength = QDCT.length;
 
     ByteBuffer buffer = ByteBuffer.allocate(imageLength);
 
-    while ((i < imageLength)) {
-      temp = QDCT[i];
+    while (i < imageLength) {
+      temp = (byte)QDCT[i];
+      i++;
 
-      while ((i < imageLength) && (temp == QDCT[i])) {
+      while ((i < imageLength) && (temp == (byte)QDCT[i])) {
         runCounter++;
         i++;
       }
 
+      if(temp == MARKER)
+        temp++;
+
       if (runCounter > 4) {
-        buffer.put((byte) 255);
-        buffer.put((byte) temp);
-        buffer.put((byte) runCounter);
+        buffer.put(MARKER);
+        buffer.put(temp);
+        buffer.putShort(runCounter);
       } else {
         for (int k = 0; k < runCounter; k++) {
-          buffer.put((byte) temp);
+          buffer.put(temp);
         }
       }
 
-      runCounter = 0;
+      runCounter = 1;
     }
 
     buffer.flip();
@@ -48,7 +54,7 @@ public class RunLengthCompressionPerformer {
     int i = 0;
     int j = 0;
     int k = 0;
-    int temp = 0;
+    byte temp = 0;
 
     ByteBuffer buffer = ByteBuffer.wrap(compressedImag);
     int pixel[] = new int[imageLength];
@@ -57,11 +63,13 @@ public class RunLengthCompressionPerformer {
       temp = buffer.get();
 
       if (k < imageLength) {
-        if (temp == 255) {
+        if (temp == MARKER) {
           i++;
           int value = buffer.get();
           i++;
-          int length = buffer.get();
+
+          short length = buffer.getShort();
+          i++;
 
           for (j = 0; j < length; j++) {
             pixel[k] = value;

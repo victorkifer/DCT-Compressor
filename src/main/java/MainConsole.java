@@ -18,12 +18,15 @@ public class MainConsole {
       JPEG jpeg = JPEG.fromFile(inputFile);
 
       Compressor compressor = new Compressor(5);
+
       CJPEG cjpeg = compressor.compressImage(jpeg);
 
       cjpeg.toFile("compressed.cjpg");
 
       cjpeg = CJPEG.fromFile("compressed.cjpg");
       jpeg = compressor.decompressImage(cjpeg);
+
+      //jpeg = compressor.test(jpeg);
       jpeg.toFile("restored.jpg");
     } catch (IOException e) {
       e.printStackTrace();

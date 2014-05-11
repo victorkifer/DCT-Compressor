@@ -79,10 +79,6 @@ public class JPEG extends BaseImage {
     }
 
     public JPEG build() {
-      MatrixUtils.printChunk(cImage.redMask, 8, 8);
-      MatrixUtils.printChunk(cImage.greenMask, 8, 8);
-      MatrixUtils.printChunk(cImage.blueMask, 8, 8);
-
       cImage.normalize();
       return cImage;
     }
@@ -142,6 +138,10 @@ public class JPEG extends BaseImage {
         image.setRGB(j, i, rgb);
       }
     }
+
+    MatrixUtils.printChunk(redMask, 8, 8);
+    MatrixUtils.printChunk(greenMask, 8, 8);
+    MatrixUtils.printChunk(blueMask, 8, 8);
 
     ImageIO.write(image, "jpg", new File(filename));
 

@@ -109,6 +109,16 @@ public class MatrixUtils {
     System.out.println("-------------------------------------------------------------");
   }
 
+  public static void printVector(byte[] vector, int length) {
+    int len = vector.length-1;
+    System.out.println("-------------------------------------------------------------");
+    for (int i = len - length; i < len; i++) {
+      System.out.print(vector[i] + " ");
+    }
+    System.out.println();
+    System.out.println("-------------------------------------------------------------");
+  }
+
   public static int[][] getChunk(int[][] matrix, int block_size, int xOffset, int yOffset) {
     final int height = matrix.length;
     final int width = matrix[0].length;

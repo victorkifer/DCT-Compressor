@@ -1,6 +1,7 @@
 package compressor.image;
 
 import utils.Log;
+import utils.MatrixUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,6 +50,10 @@ public class CJPEG extends BaseImage {
 
       cImage.normalize();
     }
+
+    MatrixUtils.printVector(cImage.cRedMask, 20);
+    MatrixUtils.printVector(cImage.cGreenMask, 20);
+    MatrixUtils.printVector(cImage.cBlueMask, 20);
 
     Log.i("Done");
 
@@ -139,6 +144,10 @@ public class CJPEG extends BaseImage {
     for (byte i : cBlueMask) {
       buffer.put(i);
     }
+
+    MatrixUtils.printVector(cRedMask, 20);
+    MatrixUtils.printVector(cGreenMask, 20);
+    MatrixUtils.printVector(cBlueMask, 20);
 
     buffer.flip();
     byte[] bytes = new byte[buffer.remaining()];

@@ -59,10 +59,6 @@ public class QuantizationPerformerTest extends TestCase {
         { -54, 32, -9, -9, 22, 0, 1, 3 }
     };
 
-    int[][] correct = {
-        { 90, 0, -7,  }
-    };
-
 
   }
 
