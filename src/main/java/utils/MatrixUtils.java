@@ -2,11 +2,6 @@ package utils;
 
 import java.io.*;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * License []
- * Year: 2014
- */
 public class MatrixUtils {
 
   public static void displayMatrix(int[][] matrix) {
@@ -110,6 +105,16 @@ public class MatrixUtils {
   }
 
   public static void printVector(byte[] vector, int length) {
+    int len = vector.length-1;
+    System.out.println("-------------------------------------------------------------");
+    for (int i = len - length; i < len; i++) {
+      System.out.print(vector[i] + " ");
+    }
+    System.out.println();
+    System.out.println("-------------------------------------------------------------");
+  }
+
+  public static void printVector(int[] vector, int length) {
     int len = vector.length-1;
     System.out.println("-------------------------------------------------------------");
     for (int i = len - length; i < len; i++) {

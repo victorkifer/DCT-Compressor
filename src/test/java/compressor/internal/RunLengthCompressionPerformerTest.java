@@ -4,14 +4,14 @@ import junit.framework.TestCase;
 
 public class RunLengthCompressionPerformerTest extends TestCase {
 
-  RunLengthCompressionPerformer performer;
+  RunLengthCompressor performer;
 
   byte MARKER;
 
   public void setUp() throws Exception {
     super.setUp();
-    performer = new RunLengthCompressionPerformer();
-    MARKER = RunLengthCompressionPerformer.MARKER;
+    performer = new RunLengthCompressor();
+    MARKER = RunLengthCompressor.MARKER;
   }
 
   public void testCompressImage() throws Exception {

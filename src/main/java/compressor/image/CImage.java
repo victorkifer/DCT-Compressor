@@ -1,7 +1,6 @@
 package compressor.image;
 
 import utils.Log;
-import utils.MatrixUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,19 +8,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * Year: 2014
- */
-public class CJPEG extends BaseImage {
+public class CImage extends BaseImage {
 
   byte[] cRedMask;
   byte[] cGreenMask;
   byte[] cBlueMask;
 
-  public static CJPEG fromFile(String filename) throws IOException {
+  byte quality;
+
+  public static CImage fromFile(String filename) throws IOException {
     File file = new File(filename);
-    CJPEG cImage = new CJPEG();
+    CImage cImage = new CImage();
 
     try (FileInputStream fileInputStream = new FileInputStream(file)) {
       Log.i("Loading compressed image");
@@ -30,6 +27,10 @@ public class CJPEG extends BaseImage {
 
       // reading width
       cImage.width = getInt(fileInputStream);
+
+      byte[] b = new byte[1];
+      fileInputStream.read(b);
+      cImage.quality = b[0];
 
       // reading compressed red mask
       int compressedMaskLen = getInt(fileInputStream);
@@ -51,13 +52,17 @@ public class CJPEG extends BaseImage {
       cImage.normalize();
     }
 
-    MatrixUtils.printVector(cImage.cRedMask, 20);
-    MatrixUtils.printVector(cImage.cGreenMask, 20);
-    MatrixUtils.printVector(cImage.cBlueMask, 20);
-
     Log.i("Done");
 
     return cImage;
+  }
+
+  public byte getQuality() {
+    return quality;
+  }
+
+  public void setQuality(byte quality) {
+    this.quality = quality;
   }
 
   private static int getInt(FileInputStream fis) throws IOException {
@@ -75,10 +80,10 @@ public class CJPEG extends BaseImage {
   }
 
   public static class Builder {
-    CJPEG cImage;
+    CImage cImage;
 
     public Builder() {
-      cImage = new CJPEG();
+      cImage = new CImage();
     }
 
     public void width(int width) {
@@ -101,7 +106,9 @@ public class CJPEG extends BaseImage {
       cImage.cBlueMask = blueMask;
     }
 
-    public CJPEG build() {
+    public void quality(byte quality) { cImage.quality = quality; }
+
+    public CImage build() {
       cImage.normalize();
       return cImage;
     }
@@ -120,15 +127,16 @@ public class CJPEG extends BaseImage {
     }
   }
 
-  private CJPEG() { }
+  private CImage() { }
 
   @Override
   public void toFile(String filename) throws IOException {
     Log.i("Saving compressed image");
 
-    ByteBuffer buffer = ByteBuffer.allocate(4*5+cRedMask.length+cGreenMask.length+cBlueMask.length);
+    ByteBuffer buffer = ByteBuffer.allocate(4*5+1+cRedMask.length+cGreenMask.length+cBlueMask.length);
     buffer.putInt(height);
     buffer.putInt(width);
+    buffer.put(quality);
 
     buffer.putInt(cRedMask.length);
     for (byte i : cRedMask) {
@@ -144,10 +152,6 @@ public class CJPEG extends BaseImage {
     for (byte i : cBlueMask) {
       buffer.put(i);
     }
-
-    MatrixUtils.printVector(cRedMask, 20);
-    MatrixUtils.printVector(cGreenMask, 20);
-    MatrixUtils.printVector(cBlueMask, 20);
 
     buffer.flip();
     byte[] bytes = new byte[buffer.remaining()];

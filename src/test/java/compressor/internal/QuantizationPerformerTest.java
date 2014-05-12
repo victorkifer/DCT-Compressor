@@ -4,11 +4,11 @@ import junit.framework.TestCase;
 
 public class QuantizationPerformerTest extends TestCase {
 
-  QuantizationPerformer performer;
+  Quantizer performer;
 
   public void setUp() throws Exception {
     super.setUp();
-    performer = new QuantizationPerformer(10);
+    performer = new Quantizer((byte)10);
   }
 
   public void testGetQuality() throws Exception {
@@ -16,7 +16,7 @@ public class QuantizationPerformerTest extends TestCase {
   }
 
   public void testGetQuantumMatrix() throws Exception {
-    performer.reset(2);
+    performer.reset((byte)2);
 
     int[][] correct = new int[][] {
         { 3, 5, 7, 9, 11, 13, 15, 17 },
@@ -40,13 +40,13 @@ public class QuantizationPerformerTest extends TestCase {
   }
 
   public void testReset() throws Exception {
-    performer.reset(50);
+    performer.reset((byte)50);
 
     assertEquals(50, performer.getQuality());
   }
 
   public void testQuantizeDCT() throws Exception {
-    performer.reset(2);
+    performer.reset((byte)2);
 
     int[][] input = {
         { 92, 3, -9, -7, 3, -1, 0, 2 },

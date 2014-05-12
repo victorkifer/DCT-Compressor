@@ -4,13 +4,13 @@ import junit.framework.TestCase;
 
 public class DCTPerformerTest extends TestCase {
 
-  DCTPerformer performer;
+  DCT performer;
 
   static final int PRECISION = 4;
 
   public void setUp() throws Exception {
     super.setUp();
-    performer = new DCTPerformer();
+    performer = new DCT();
   }
 
   public void testForwardDCT() throws Exception {

@@ -1,9 +1,5 @@
 package compressor.internal;
 
-/**
- * Created by Victor
- * droiddevua[at]gmail[dot].com
- */
 public class ZigZagMatrix {
 
   public static int[][] getZigZagMatrix(int a) {

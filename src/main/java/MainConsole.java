@@ -1,14 +1,10 @@
 import compressor.Compressor;
-import compressor.image.CJPEG;
+import compressor.image.CImage;
 import compressor.image.JPEG;
+import compressor.internal.Config;
 
 import java.io.IOException;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * License []
- * Year: 2014
- */
 public class MainConsole {
 
   public static void main(String[] args) {
@@ -17,16 +13,16 @@ public class MainConsole {
     try {
       JPEG jpeg = JPEG.fromFile(inputFile);
 
-      Compressor compressor = new Compressor(5);
+      Compressor compressor = new Compressor(Config.DEFAULT_QUALITY);
 
-      CJPEG cjpeg = compressor.compressImage(jpeg);
+      CImage cImage = compressor.compressImage(jpeg);
 
-      cjpeg.toFile("compressed.cjpg");
+      cImage.toFile("compressed.cimg");
 
-      cjpeg = CJPEG.fromFile("compressed.cjpg");
-      jpeg = compressor.decompressImage(cjpeg);
+      cImage = CImage.fromFile("compressed.cimg");
+      jpeg = compressor.decompressImage(cImage);
 
-      //jpeg = compressor.test(jpeg);
+      jpeg = compressor.test(jpeg);
       jpeg.toFile("restored.jpg");
     } catch (IOException e) {
       e.printStackTrace();

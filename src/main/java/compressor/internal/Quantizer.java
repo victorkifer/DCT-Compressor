@@ -1,23 +1,23 @@
 package compressor.internal;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * Year: 2014
- */
-public class QuantizationPerformer {
-  private int mQuality = 80;
+public class Quantizer {
+  private byte mQuality = Config.DEFAULT_QUALITY;
 
   private int zigZag[][];
   private int quantum[][];
 
-  public QuantizationPerformer(int quality) {
-    mQuality = quality;
+  public Quantizer(byte quality) {
+    setQuality(quality);
 
     initMatrices();
   }
 
-  public int getQuality() {
-    return mQuality;
+  public byte getQuality() {
+    return (byte)(4*(mQuality - 10));
+  }
+
+  private void setQuality(byte quality) {
+    mQuality = (byte)(10 + quality/4);
   }
 
   private void initMatrices() {
@@ -43,8 +43,8 @@ public class QuantizationPerformer {
     return quantum;
   }
 
-  public void reset(int quality) {
-    mQuality = quality;
+  public void reset(byte quality) {
+    setQuality(quality);
 
     initQuantumMatrix();
   }

@@ -1,7 +1,10 @@
 package compressor.image;
 
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.PaletteData;
+import org.eclipse.swt.widgets.Display;
 import utils.Log;
-import utils.MatrixUtils;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -11,12 +14,7 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * Year: 2014
- */
 public class JPEG extends BaseImage {
   int[][] redMask;
   int[][] greenMask;
@@ -24,13 +22,19 @@ public class JPEG extends BaseImage {
 
   public static JPEG fromFile(String filename) throws IOException {
     Log.i("Loading jpeg image...");
-    URL url = new File(filename).toURI().toURL();
-    BufferedImage image = ImageIO.read(url);
+    //URL url = new File(filename).toURI().toURL();
+    //BufferedImage image = ImageIO.read(url);
+    ImageData image = new Image(Display.getDefault(), filename).getImageData();
 
+    return fromImageData(image);
+  }
+
+  public static JPEG fromImageData(ImageData image) {
+    Log.i("Loading jpeg image...");
     JPEG cImage = new JPEG();
 
-    cImage.width = image.getWidth();
-    cImage.height = image.getHeight();
+    cImage.width = image.width;
+    cImage.height = image.height;
 
     cImage.normalize();
 
@@ -38,7 +42,7 @@ public class JPEG extends BaseImage {
 
     for (int i = 0; i < cImage.height; i++) {
       for (int j = 0; j < cImage.width; j++) {
-        rgb[i][j] = image.getRGB(j, i);
+        rgb[i][j] = image.getPixel(j, i);
       }
     }
 
@@ -46,14 +50,12 @@ public class JPEG extends BaseImage {
     cImage.greenMask = cImage.getMaskedArray(rgb, 0x0000ff00, 8);
     cImage.blueMask = cImage.getMaskedArray(rgb, 0x000000ff, 0);
 
-    MatrixUtils.printChunk(cImage.redMask, 8, 8);
-    MatrixUtils.printChunk(cImage.greenMask, 8, 8);
-    MatrixUtils.printChunk(cImage.blueMask, 8, 8);
-
     Log.i("Done");
 
     return cImage;
   }
+
+
 
   public static class Builder {
     JPEG cImage;
@@ -143,10 +145,6 @@ public class JPEG extends BaseImage {
       }
     }
 
-    MatrixUtils.printChunk(redMask, 8, 8);
-    MatrixUtils.printChunk(greenMask, 8, 8);
-    MatrixUtils.printChunk(blueMask, 8, 8);
-
     File file = new File(filename);
 
     ImageOutputStream ios =  ImageIO.createImageOutputStream(file);
@@ -160,4 +158,22 @@ public class JPEG extends BaseImage {
 
     Log.i("Done");
   }
+
+  public ImageData getImageData() {
+    PaletteData PALETTE_DATA = new PaletteData(0xFF0000, 0xFF00, 0xFF);
+    ImageData swtImageData = new ImageData(width, height, 24, PALETTE_DATA);
+    byte[] data = swtImageData.data;
+
+    for (int i = 0; i < height; i++) {
+      int idx = i * swtImageData.bytesPerLine;
+      for (int j = 0; j < width; j++) {
+        data[idx++] = (byte) redMask[i][j];
+        data[idx++] = (byte) greenMask[i][j];
+        data[idx++] = (byte) blueMask[i][j];
+      }
+    }
+
+    return swtImageData;
+  }
+
 }

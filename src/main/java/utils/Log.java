@@ -3,10 +3,6 @@ package utils;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * Year: 2014
- */
 public class Log {
   private static final boolean DEBUG = true;
 

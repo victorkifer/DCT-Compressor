@@ -2,16 +2,12 @@ package compressor.internal;
 
 import utils.MatrixUtils;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * Year: 2014
- */
-public class DCTPerformer {
+public class DCT {
 
   private double cos[][];
   private double cosT[][];
 
-  public DCTPerformer() {
+  public DCT() {
     initMatrices();
   }
 

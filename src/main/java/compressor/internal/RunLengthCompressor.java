@@ -2,13 +2,9 @@ package compressor.internal;
 
 import java.nio.ByteBuffer;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * Year: 2014
- */
-public class RunLengthCompressionPerformer {
+public class RunLengthCompressor {
 
-  public static final byte MARKER = -128;
+  public static final byte MARKER = (byte)255;
 
   public byte[] compressImage(int[] QDCT) {
     int i = 0;
@@ -28,7 +24,7 @@ public class RunLengthCompressionPerformer {
       }
 
       if(temp == MARKER)
-        temp++;
+        temp--;
 
       if (runCounter > 4) {
         buffer.put(MARKER);
@@ -66,6 +62,7 @@ public class RunLengthCompressionPerformer {
         if (temp == MARKER) {
           i++;
           int value = buffer.get();
+          if(value < 0) value += 256;
           i++;
 
           short length = buffer.getShort();

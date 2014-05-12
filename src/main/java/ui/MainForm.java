@@ -1,37 +1,43 @@
 package ui;
 
+import compressor.Compressor;
+import compressor.image.CImage;
+import compressor.image.JPEG;
+import compressor.internal.Config;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * Year: 2014
- */
+import java.io.IOException;
+
 public class MainForm {
 
   private Display mDisplay;
   private Shell mShell;
   private Label imageView;
 
+  Compressor compressor;
+
   public MainForm() {
     mDisplay = Display.getDefault();
     mShell = new Shell(mDisplay);
 
-    mShell.setSize(400, 300);
-    mShell.setLayout(new RowLayout());
+    mShell.setSize(550, 600);
+    mShell.setLayout(new FillLayout());
     mShell.setText(Display.getAppName());
+
+    compressor = new Compressor(Config.DEFAULT_QUALITY);
 
     createUI();
     createMenuBar();
   }
 
   private void createUI() {
-    imageView = new Label(mShell, SWT.NONE);
-    imageView.pack();
+    imageView = new Label(mShell, SWT.CENTER | SWT.V_SCROLL | SWT.H_SCROLL);
   }
 
   private void createMenuBar() {
@@ -50,7 +56,7 @@ public class MainForm {
     fileMenuHeader.setMenu(fileMenu);
 
     fileOpenItem = new MenuItem(fileMenu, SWT.PUSH);
-    fileOpenItem.setText("&Open");
+    fileOpenItem.setText("&Open image");
     fileOpenItem.addSelectionListener(new SelectionListener() {
       @Override
       public void widgetSelected(SelectionEvent e) {
@@ -67,11 +73,11 @@ public class MainForm {
     fileSaveAsItem.addSelectionListener(new SelectionListener() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-
+        saveAsFile();
       }
       @Override
       public void widgetDefaultSelected(SelectionEvent e) {
-
+        saveAsFile();
       }
     });
 
@@ -113,12 +119,62 @@ public class MainForm {
 
   public void openFile() {
     FileDialog dialog = new FileDialog (mShell, SWT.OPEN);
-    dialog.setFilterExtensions(new String [] {"*.jpg", "*.cjpg"});
+    dialog.setFilterExtensions(new String [] {"*.jpg", "*.png", "*.cimg"});
     String fileName = dialog.open();
-    Image image = new Image(mDisplay, fileName);
-    imageView.setImage(image);
-    imageView.pack();
-    mShell.pack();
+
+    if(fileName == null || fileName.isEmpty())
+      return;
+
+    Image image = null;
+
+    if(fileName.endsWith(".cimg")) {
+      try {
+        CImage cimg = CImage.fromFile(fileName);
+
+        JPEG img = compressor.decompressImage(cimg);
+
+        ImageData imageData = img.getImageData();
+
+        image = new Image(mDisplay, imageData);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    } else {
+      image = new Image(mDisplay, fileName);
+    }
+
+    if(image != null) {
+      imageView.setImage(image);
+    }
+  }
+
+  public void saveAsFile() {
+    FileDialog dialog = new FileDialog (mShell, SWT.SAVE);
+    dialog.setFilterExtensions(new String [] {"*.jpg", "*.cimg"});
+    String fileName = dialog.open();
+
+    if(fileName == null || fileName.isEmpty())
+      return;
+
+
+    if(imageView.getImage() == null)
+      return;
+
+    ImageData imageData = imageView.getImage().getImageData();
+    JPEG jpeg = JPEG.fromImageData(imageData);
+
+    try {
+
+      if(fileName.endsWith(".cimg")) {
+        CImage img = compressor.compressImage(jpeg);
+        img.toFile(fileName);
+      } else {
+        jpeg.toFile(fileName);
+      }
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   public void about() {

@@ -4,10 +4,6 @@ import compressor.internal.Config;
 
 import java.io.IOException;
 
-/**
- * Author: Victor Kifer (droiddevua[at]gmail[dot]com)
- * Year: 2014
- */
 public abstract class BaseImage {
   protected int width;
   protected int height;
