@@ -1,2 +1,7 @@
 target/
 .idea/
+
+*.jpg
+*.cimg
+
+!src/main/resources/*.jpg
