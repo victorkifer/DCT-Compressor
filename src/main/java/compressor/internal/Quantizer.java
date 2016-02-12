@@ -13,11 +13,11 @@ public class Quantizer {
   }
 
   public byte getQuality() {
-    return (byte)(4*(mQuality - 10));
+    return mQuality;
   }
 
   private void setQuality(byte quality) {
-    mQuality = (byte)(10 + quality/4);
+    mQuality = quality;
   }
 
   private void initMatrices() {

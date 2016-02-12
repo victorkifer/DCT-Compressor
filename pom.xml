@@ -29,6 +29,16 @@
             <version>4.8.1</version>
             <scope>test</scope>
         </dependency>
+
+
+	<dependency>
+	    <groupId>org.eclipse</groupId>
+	    <artifactId>swt</artifactId>
+	    <version>4.332</version>
+	    <scope>system</scope>
+	    <systemPath>${project.basedir}/lib/swt/swt.jar</systemPath>
+	</dependency>
+
     </dependencies>
 
 </project>
